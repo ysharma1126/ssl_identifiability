@@ -2,7 +2,7 @@
 Official code to reproduce the results and data presented in the paper [Self-Supervised Learning with Data Augmentations Provably Isolates Content from Style](https://arxiv.org/abs/2106.04619).
 
 <p align="center">
-  <img src="https://github.com/ysharma1126/neurips2021_dataaaug/blob/master/problem_formulation.png?raw=true" width="300" alt="Problem Formulation" />
+  <img src="https://github.com/ysharma1126/ssl_identifiability/blob/master/problem_formulation.png?raw=true" width="300" alt="Problem Formulation" />
 </p>
 
 ## Numerical data
@@ -17,7 +17,7 @@ To evaluate:
 
 ## Causal3DIdent Dataset
 <p align="center">
-  <img src="https://github.com/ysharma1126/neurips2021_dataaaug/blob/master/causal_3dident.png?raw=true" alt="Causal3DIdent dataset example images" />
+  <img src="https://github.com/ysharma1126/ssl_identifiability/blob/master/causal_3dident.png?raw=true" alt="Causal3DIdent dataset example images" />
 </p>
 
 You can access the dataset [here](https://zenodo.org/record/4784282). The training and test datasets consists of 250000 and 25000 samples, respectively.
