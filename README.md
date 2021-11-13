@@ -43,4 +43,27 @@ To evaluate:
 ```
 ## Acknowledgements
 
-This repository builds on the following [codebase](https://github.com/brendel-group/cl-ica).
+This repository builds on the following [codebase](https://github.com/brendel-group/cl-ica). If you find the dataset/code provided here to be useful, I would recommend you to also cite the following, 
+```bibtex
+@article{zimmermann2021cl,
+  author = {
+    Zimmermann, Roland S. and
+    Sharma, Yash and
+    Schneider, Steffen and
+    Bethge, Matthias and
+    Brendel, Wieland
+  },
+  title = {
+    Contrastive Learning Inverts
+    the Data Generating Process
+  },
+  booktitle = {Proceedings of the 38th International Conference on Machine Learning,
+    {ICML} 2021, 18-24 July 2021, Virtual Event},
+  series = {Proceedings of Machine Learning Research},
+  volume = {139},
+  pages = {12979--12990},
+  publisher = {{PMLR}},
+  year = {2021},
+  url = {http://proceedings.mlr.press/v139/zimmermann21a.html},
+}
+```
