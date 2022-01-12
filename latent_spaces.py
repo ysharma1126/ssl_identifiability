@@ -47,9 +47,10 @@ class LatentSpace:
 class ProductLatentSpace(LatentSpace):
     """A latent space which is the cartesian product of other latent spaces."""
 
-    def __init__(self, spaces: List[LatentSpace], content_dependent_style=False):
+    def __init__(self, spaces: List[LatentSpace], a=None, B=None):
         self.spaces = spaces
-        self.content_dependent_style = content_dependent_style
+        self.a = a
+        self.B = B
 
     def sample_conditional(self, z, size, **kwargs):
         x = []
@@ -66,10 +67,8 @@ class ProductLatentSpace(LatentSpace):
 
     def sample_marginal(self, size, **kwargs):
         x = [s.sample_marginal(size=size, **kwargs) for s in self.spaces]
-        if self.content_dependent_style:
-            B = torch.randn(x[1].size(-1), x[0].size(-1), device=x[0].device)
-            a = torch.randn(x[1].size(-1), device=x[0].device)
-            content_dependent_style = torch.einsum("ij,kj -> ki", B, x[0]) + a
+        if self.a is not None and self.B is not None:
+            content_dependent_style = torch.einsum("ij,kj -> ki", self.B, x[0]) + self.a
             x[1] += content_dependent_style
         return torch.cat(x, -1)
 

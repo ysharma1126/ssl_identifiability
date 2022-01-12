@@ -12,6 +12,7 @@ import latent_spaces
 import encoders
 from sklearn.preprocessing import StandardScaler
 import string
+from scipy.stats import wishart
 
 use_cuda = torch.cuda.is_available()
 if use_cuda:
@@ -44,6 +45,7 @@ def get_exp_name(args, parser, blacklist=['evaluate', 'num_train_batches', 'num_
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model-n", type=int, default=0)
     parser.add_argument("--content-n", type=int, default=5)
     parser.add_argument("--style-n", type=int, default=5)
     parser.add_argument("--style-change-prob", type=float, default=1.0)
@@ -95,13 +97,21 @@ def main():
         torch.manual_seed(args.seed)
     loss = losses.LpSimCLRLoss()
     latent_spaces_list = []
+    Sigma_c, Sigma_s, Sigma_a = None, None, None
+    if args.statistical_dependence:
+        Sigma_c = wishart.rvs(args.content_n, np.eye(args.content_n), size=1)
+        Sigma_s = wishart.rvs(args.style_n, np.eye(args.style_n), size=1)
+        Sigma_a = wishart.rvs(args.style_n, np.eye(args.style_n), size=1)
+    a, B = None, None
+    if args.content_dependent_style:
+        B = torch.randn(args.style_n, args.content_n, device=device)
+        a = torch.randn(args.style_n, device=device)
     for i in range(2):
         content_condition = (i == 0)
         space = spaces.NRealSpace(args.content_n if content_condition else args.style_n)
-        eta = torch.zeros(args.content_n if content_condition else args.style_n)
         sample_marginal = lambda space, size, device=device: space.normal(
             None, args.m_param, size, device, 
-            statistical_dependence=args.statistical_dependence
+            Sigma=Sigma_c if content_condition else Sigma_s
         )
         if content_condition:
             sample_conditional = lambda space, z, size, device=device: z
@@ -109,7 +119,7 @@ def main():
             sample_conditional = lambda space, z, size, device=device: space.normal(
                 z, args.c_param, size, device, 
                 change_prob=args.style_change_prob, 
-                statistical_dependence=args.statistical_dependence
+                Sigma=Sigma_a
             )
         latent_spaces_list.append(latent_spaces.LatentSpace(
             space=space,
@@ -117,7 +127,7 @@ def main():
             sample_conditional=sample_conditional,
         ))
     latent_space = latent_spaces.ProductLatentSpace(spaces=latent_spaces_list, 
-                            content_dependent_style=args.content_dependent_style)
+                            a=a, B=B)
     def sample_marginal_and_conditional(size, device=device):
         z = latent_space.sample_marginal(size=size, device=device)
         z3 = latent_space.sample_marginal(size=size, device=device)
@@ -172,7 +182,7 @@ def main():
         return total_loss_value.item(), unpack_item_list(losses_value)
     f = encoders.get_mlp(
         n_in=args.content_n + args.style_n,
-        n_out=args.content_n,
+        n_out=args.model_n if args.model_n else args.content_n,
         layers=[
             (args.content_n + args.style_n) * 10,
             (args.content_n + args.style_n) * 50,

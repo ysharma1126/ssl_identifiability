@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod, abstractproperty
 import torch
 from scipy import stats
 import numpy as np
-from scipy.stats import wishart, truncnorm
+from scipy.stats import truncnorm
 import sys
 
 
@@ -40,7 +40,7 @@ class NRealSpace(Space):
     def uniform(self, size, device="cpu"):
         raise NotImplementedError("Not defined on R^n")
 
-    def normal(self, mean, std, size, device="cpu", change_prob=1., statistical_dependence=False):
+    def normal(self, mean, std, size, device="cpu", change_prob=1., Sigma=None):
         """Sample from a Normal distribution in R^N.
 
         Args:
@@ -65,9 +65,7 @@ class NRealSpace(Space):
         if torch.is_tensor(std):
             std = std.to(device)
         change_indices = torch.distributions.binomial.Binomial(probs=change_prob).sample((size, self.n)).to(device)
-        if statistical_dependence:
-            Sigma = wishart.rvs(self.n, np.eye(self.n), size=1)
-            assert np.all(np.linalg.eigvals(Sigma) > 0)  # check positive-definite
+        if Sigma is not None:
             changes = np.random.multivariate_normal(np.zeros(self.n), Sigma, size)
             changes = torch.FloatTensor(changes).to(device)
         else:
